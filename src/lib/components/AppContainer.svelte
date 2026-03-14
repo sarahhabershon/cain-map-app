@@ -9,7 +9,7 @@
     import ActiveFilters from '$lib/components/ActiveFilters.svelte' 
     import Search from '$lib/components/search.svelte' 
     import Info from '$lib/components/infoBox.svelte' 
-    // import PdfExport from '$lib/components/download_button.svelte' 
+    import DownloadButton from '$lib/components/DownloadButton.svelte' 
     const europeGeoJson = JSON.parse(geoEurope)
     const borders = JSON.parse(borders1925)
     const boundingBoxes = JSON.parse(countryBounds)
@@ -156,12 +156,20 @@ let filteredData = $derived({ ...europeGeoJson, features: filterFeatures() });
                 bind:countryTimelineOnly={countryTimelineOnly}/>
         </div>
     </div>
+
+    <DownloadButton 
+        actors={actors}
+        subActors={subActors}
+        dates={dates}
+        country={country}
+        filteredData={filteredData}
+        />
     
     <MapCircles bind:zoom={mapZoom} 
-    filteredData={filteredData}
-    borders={borders}
-    bind:country = {country}
-    boundingBoxes = {boundingBoxes}/> 
+        filteredData={filteredData}
+        borders={borders}
+        bind:country = {country}
+        boundingBoxes = {boundingBoxes}/> 
 </div>
 
 

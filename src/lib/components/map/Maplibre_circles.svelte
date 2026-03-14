@@ -1,7 +1,8 @@
 <script lang="ts">
   import { MapLibre, CircleLayer, LineLayer, GeoJSON, Popup} from 'svelte-maplibre';
   import type { LngLatBoundsLike } from 'maplibre-gl';
-  
+  import MapInstanceCapture from './MapInstanceCapture.svelte';
+
   let {zoom = $bindable(), filteredData, borders, country = $bindable(), boundingBoxes} = $props()
 
 
@@ -19,7 +20,6 @@
   return b ? [b.min_lon, b.min_lat, b.max_lon, b.max_lat] : europeBBox;
 });
 
-  
 </script>
 
 
@@ -31,7 +31,10 @@
   style = "https://api.maptiler.com/maps/019ba32c-43d2-74ac-bdba-1768cc85c5c2/style.json?key=GDx9s6OzDP05pKKgG4wT"
   bind:zoom={zoom}
   bind:bounds={bounds}
+  preserveDrawingBuffer={true}
 >
+
+<MapInstanceCapture />
 
   <GeoJSON
     id="borders-1925"
