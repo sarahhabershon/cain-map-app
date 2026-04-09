@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import { getMapContext } from 'svelte-maplibre';
 
   console.log('MapInstanceCapture mounting...');
@@ -11,4 +11,4 @@
       console.log('Map instance stored:', (window as any).__map);
     }
   });
-</script>
+</script> -->

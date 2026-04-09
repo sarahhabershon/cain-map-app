@@ -1,12 +1,11 @@
 <script>
   import jsPDF from 'jspdf';
   import * as d3 from 'd3';
+  import maplibregl from 'maplibre-gl';
 
-  let { actors = [], subActors = [], dates = [], country = null, filteredData } = $props();
+  let { actors = $bindable(), subActors = $bindable(), dates = $bindable(), country = $bindable(), bounds, filteredData, mapStyle } = $props();
 
-  const features = filteredData?.features ?? [];
-console.log('features count:', features.length);
-const svgString = buildChartSvg(features);
+
 
   async function svgUrlToPngDataUrl(url) {
     const response = await fetch(url);
@@ -29,17 +28,16 @@ const svgString = buildChartSvg(features);
   }
 
   function buildChartSvg(features) {
+    if (!features || features.length === 0) return null;
+
     const width = 1200;
-    const height = 160;
+    const height = 200; // Increased to accommodate Y-axis
     const marginTop = 20;
     const marginBottom = 30;
-    const marginLeft = 10;
-    const marginRight = 10;
+    const marginLeft = 40; // Space for Y-axis
+    const marginRight = 20;
     const innerWidth = width - marginLeft - marginRight;
     const innerHeight = height - marginTop - marginBottom;
-
-    
-
 
     // Aggregate by month
     const chartData = Array.from(
@@ -76,30 +74,54 @@ const svgString = buildChartSvg(features);
       return `<rect x="${x}" y="${y}" width="${barWidth}" height="${barH}" fill="#fec604"/>`;
     }).join('\n');
 
-    // Build year axis ticks
+    // Build Y-axis ticks
+    const yTicks = yScale.ticks(4).map(tick => {
+      const y = marginTop + yScale(tick);
+      return `
+        <line x1="${marginLeft - 5}" y1="${y}" x2="${marginLeft}" y2="${y}" stroke="#999" stroke-width="1"/>
+        <text x="${marginLeft - 10}" y="${y + 3}" text-anchor="end" font-family="Helvetica, sans-serif" font-size="11" fill="#666">${tick}</text>
+      `;
+    }).join('\n');
+
+    // Y-axis line
+    const yAxisLine = `<line x1="${marginLeft}" y1="${marginTop}" x2="${marginLeft}" y2="${marginTop + innerHeight}" stroke="#999" stroke-width="1"/>`;
+
+    // Build X-axis (years)
     const yearTicks = d3.timeYear.range(
       d3.timeYear.floor(xScale.domain()[0]),
       d3.timeYear.ceil(xScale.domain()[1])
     );
 
     const axisY = marginTop + innerHeight;
-    const axisLine = `<line x1="${marginLeft}" y1="${axisY}" x2="${marginLeft + innerWidth}" y2="${axisY}" stroke="#383C42" stroke-width="1"/>`;
+    const xAxisLine = `<line x1="${marginLeft}" y1="${axisY}" x2="${marginLeft + innerWidth}" y2="${axisY}" stroke="#383C42" stroke-width="1"/>`;
 
-    const ticks = yearTicks.map(d => {
+    const xTicks = yearTicks.map(d => {
       const x = xScale(d) + marginLeft;
       return `
         <line x1="${x}" y1="${axisY}" x2="${x}" y2="${axisY + 5}" stroke="#383C42" stroke-width="1"/>
         <text x="${x}" y="${axisY + 16}" text-anchor="middle" 
-              font-family="Helvetica, sans-serif" font-size="14" fill="#383C42">
+              font-family="Helvetica, sans-serif" font-size="12" fill="#383C42">
           ${d3.timeFormat('%Y')(d)}
         </text>`;
     }).join('\n');
 
+    // Y-axis label
+    const yLabel = `
+      <text x="${marginLeft - 25}" y="${marginTop + innerHeight / 2}" 
+            text-anchor="middle" font-family="Helvetica, sans-serif" 
+            font-size="10" fill="#666" transform="rotate(-90, ${marginLeft - 25}, ${marginTop + innerHeight / 2})">
+        Event count
+      </text>
+    `;
+
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
       <rect width="${width}" height="${height}" fill="white"/>
       ${bars}
-      ${axisLine}
-      ${ticks}
+      ${yAxisLine}
+      ${yTicks}
+      ${xAxisLine}
+      ${xTicks}
+      ${yLabel}
     </svg>`;
   }
 
@@ -125,45 +147,134 @@ const svgString = buildChartSvg(features);
     return canvas.toDataURL('image/png');
   }
 
+  async function captureOffscreenMap() {
+    return new Promise((resolve, reject) => {
+      try {
+        // Create hidden container
+        const container = document.createElement('div');
+        container.style.position = 'absolute';
+        container.style.top = '-9999px';
+        container.style.left = '-9999px';
+        container.style.width = '1200px';
+        container.style.height = '800px';
+        document.body.appendChild(container);
+
+        // Initialize map with country bounds
+        const map = new maplibregl.Map({
+          container: container,
+          style: mapStyle || 'https://demotiles.maplibre.org/style.json', // Use your style
+          center: bounds?.center || [0, 0],
+          zoom: bounds?.zoom || 5,
+          preserveDrawingBuffer: true, // Critical for capture
+          interactive: false // No need for interactions
+        });
+
+        let loaded = false;
+        let idle = false;
+
+        map.on('load', () => {
+          loaded = true;
+          if (loaded && idle) finish();
+        });
+
+        map.on('idle', () => {
+          idle = true;
+          if (loaded && idle) finish();
+        });
+
+        const finish = () => {
+          // Set high pixel ratio for print quality
+          map.setPixelRatio(3);
+          
+          // Wait one frame for the pixel ratio to apply
+          setTimeout(() => {
+            const mapCanvas = map.getCanvas();
+            const mapImage = mapCanvas.toDataURL('image/png');
+            
+            // Cleanup
+            map.remove();
+            container.remove();
+            
+            resolve(mapImage);
+          }, 100);
+        };
+
+        // Timeout fallback
+        setTimeout(() => {
+          if (!loaded || !idle) {
+            console.warn('Map load timeout, capturing anyway');
+            finish();
+          }
+        }, 5000);
+
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
   async function downloadReport() {
-    const map = window.__map;
 
-    const [dangerLogo, ercLogo] = await Promise.all([
-      svgUrlToPngDataUrl('/src/lib/img/DANGER_logo.svg'),
-      svgUrlToPngDataUrl('/src/lib/img/ERC_logo.svg'),
-    ]);
+    // Safety checks
+    const features = filteredData?.features ?? [];
+    if (features.length === 0) {
+      console.warn('No data to export');
+      alert('No data available for the selected filters.');
+      return;
+    }
 
-    map.once('idle', async () => {
-      const mapCanvas = map.getCanvas();
-      const mapImage = mapCanvas.toDataURL('image/png');
+    if (!bounds) {
+      console.warn('No country bounds available');
+      alert('Please select a country first.');
+      return;
+    }
 
-      // Build clean chart SVG from scratch
-      const svgString = buildChartSvg(filteredData.features);
+    try {
+      // Show loading state if you have one
+      console.log('Generating report...');
+
+      // 1. Capture map offscreen
+      const mapImage = await captureOffscreenMap();
+      
+      // 2. Load logos
+      const [dangerLogo, ercLogo] = await Promise.all([
+        svgUrlToPngDataUrl('/src/lib/img/DANGER_logo.svg'),
+        svgUrlToPngDataUrl('/src/lib/img/ERC_logo.svg'),
+      ]);
+
+      // 3. Build and capture chart
+      const svgString = buildChartSvg(features);
       const chartImage = svgString ? await svgStringToPngDataUrl(svgString) : null;
 
-      // Assemble PDF
+      // 4. Assemble PDF
       const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
 
-      // Map fills whole page
-      pdf.addImage(mapImage, 'PNG', 0, 0, pageWidth, pageHeight);
+      // Map fills most of the page
+      const mapHeightMm = pageHeight * 0.7;
+      pdf.addImage(mapImage, 'PNG', 0, 0, pageWidth, mapHeightMm);
 
-      // Bar chart overlaid at bottom
+      // Chart below the map (separate panel)
       if (chartImage) {
-        const chartHeightMm = pageHeight * 0.18;
-        const chartYMm = pageHeight - chartHeightMm - 5;
+        const chartHeightMm = pageHeight * 0.22;
+        const chartYMm = mapHeightMm + 5;
         pdf.addImage(chartImage, 'PNG', 5, chartYMm, pageWidth - 10, chartHeightMm);
       }
 
-      // --- Filters + info box ---
+      // 5. Filters + info box (top-left overlay on map)
       const filterLines = [];
+      
+      // Add summary statistics
+      const eventCount = features.length;
+      filterLines.push({ label: 'Total events', value: eventCount.toString() });
+      
       if (country) filterLines.push({ label: 'Country', value: country });
       if (actors.length > 0) filterLines.push({ label: 'Actor groups', value: actors.join(', ') });
       if (subActors.length > 0) filterLines.push({ label: 'Actors', value: subActors.map(a => a.name).join(', ') });
       if (dates.length === 2) {
         const fmt = (d) => new Date(d).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
-        filterLines.push({ label: 'Dates', value: `${fmt(dates[0])} – ${fmt(dates[1])}` });
+        filterLines.push({ label: 'Date range', value: `${fmt(dates[0])} – ${fmt(dates[1])}` });
       }
 
       const boxX = 8;
@@ -173,12 +284,10 @@ const svgString = buildChartSvg(features);
       const padding = 4;
 
       const headerHeight = 8;
-      const filtersHeight = filterLines.length > 0
-        ? filterLines.reduce((acc, { value }) => {
-            const wrapped = pdf.splitTextToSize(value, boxWidth - padding * 2);
-            return acc + lineHeight + (wrapped.length - 1) * 3.5 + 1;
-          }, 0)
-        : 8;
+      const filtersHeight = filterLines.reduce((acc, { value }) => {
+        const wrapped = pdf.splitTextToSize(value, boxWidth - padding * 2);
+        return acc + lineHeight + (wrapped.length - 1) * 3.5 + 1;
+      }, 0);
 
       const citationText = 'Source: CAIN Dataset (Citizen Anger Interwar News)';
       const citationWrapped = pdf.splitTextToSize(citationText, boxWidth - padding * 2);
@@ -201,30 +310,22 @@ const svgString = buildChartSvg(features);
       pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(8);
       pdf.setTextColor(56, 60, 66);
-      pdf.text('ACTIVE FILTERS', boxX + padding, cursorY + 4);
+      pdf.text('REPORT DETAILS', boxX + padding, cursorY + 4);
       cursorY += headerHeight;
 
       // Filter lines
-      if (filterLines.length > 0) {
-        filterLines.forEach(({ label, value }) => {
-          pdf.setFont('helvetica', 'bold');
-          pdf.setFontSize(6.5);
-          pdf.setTextColor(120, 120, 120);
-          pdf.text(label.toUpperCase(), boxX + padding, cursorY);
-          pdf.setFont('helvetica', 'normal');
-          pdf.setFontSize(7.5);
-          pdf.setTextColor(50, 50, 50);
-          const wrapped = pdf.splitTextToSize(value, boxWidth - padding * 2);
-          pdf.text(wrapped, boxX + padding, cursorY + 3.5);
-          cursorY += lineHeight + (wrapped.length - 1) * 3.5 + 1;
-        });
-      } else {
-        pdf.setFont('helvetica', 'italic');
-        pdf.setFontSize(7);
-        pdf.setTextColor(160, 160, 160);
-        pdf.text('No filters applied', boxX + padding, cursorY + 3);
-        cursorY += 8;
-      }
+      filterLines.forEach(({ label, value }) => {
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(6.5);
+        pdf.setTextColor(120, 120, 120);
+        pdf.text(label.toUpperCase(), boxX + padding, cursorY);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(7.5);
+        pdf.setTextColor(50, 50, 50);
+        const wrapped = pdf.splitTextToSize(value, boxWidth - padding * 2);
+        pdf.text(wrapped, boxX + padding, cursorY + 3.5);
+        cursorY += lineHeight + (wrapped.length - 1) * 3.5 + 1;
+      });
 
       // Divider
       pdf.setDrawColor(230, 230, 230);
@@ -258,10 +359,14 @@ const svgString = buildChartSvg(features);
       const ercW = maxLogoH * ercAspect;
       pdf.addImage(ercLogo.dataUrl, 'PNG', boxX + padding + dangerW + 3, cursorY, ercW, maxLogoH);
 
-      pdf.save('cain-report.pdf');
-    });
-
-    map.triggerRepaint();
+      // Save
+      pdf.save(`${country || 'report'}-cain-report.pdf`);
+      console.log('Report generated successfully');
+      
+    } catch (error) {
+      console.error('Error generating report:', error);
+      alert('Failed to generate report. Please try again.');
+    }
   }
 </script>
 

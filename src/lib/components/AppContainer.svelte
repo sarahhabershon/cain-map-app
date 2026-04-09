@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import MapCircles from '$lib/components/map/Maplibre_circles.svelte' 
     import geoEurope from '$lib/data/all_events_no_nulls?raw'
     import borders1925 from '$lib/data/all_borders_1925.geojson?raw';
@@ -9,10 +9,13 @@
     import ActiveFilters from '$lib/components/ActiveFilters.svelte' 
     import Search from '$lib/components/search.svelte' 
     import Info from '$lib/components/infoBox.svelte' 
+    import type { LngLatBoundsLike } from 'maplibre-gl';
     import DownloadButton from '$lib/components/DownloadButton.svelte' 
     const europeGeoJson = JSON.parse(geoEurope)
     const borders = JSON.parse(borders1925)
     const boundingBoxes = JSON.parse(countryBounds)
+    const mapStyle = "https://api.maptiler.com/maps/019ba32c-43d2-74ac-bdba-1768cc85c5c2/style.json?key=GDx9s6OzDP05pKKgG4wT"
+
 
     let mapZoom = $state(3)
     let toggle = $state(true)
@@ -75,6 +78,21 @@
             return countryOk && groupOk;
         });
     });
+
+    const europeBBox: LngLatBoundsLike = [-10.0, 24.5, 31.5, 61.5];
+
+      // bounds is reactive and will update automatically based on country
+    const bounds: LngLatBoundsLike = $derived.by(() => {
+        if (!country) return europeBBox; // default to Europe
+
+        if (!boundingBoxes) return europeBBox; // safeguard
+
+
+        const b = boundingBoxes.find(b => b.country_coded === country);
+        return b ? [b.min_lon, b.min_lat, b.max_lon, b.max_lat] : europeBBox;
+
+    });
+
 
 
     function filterFeatures() {
@@ -152,7 +170,6 @@ let filteredData = $derived({ ...europeGeoJson, features: filterFeatures() });
                 bind:subActors={subActors} 
                 bind:dates={dates}
                 bind:country={country}
-                uniqueCountries
                 bind:countryTimelineOnly={countryTimelineOnly}/>
         </div>
     </div>
@@ -163,13 +180,15 @@ let filteredData = $derived({ ...europeGeoJson, features: filterFeatures() });
         dates={dates}
         country={country}
         filteredData={filteredData}
+        bounds={bounds}
+        mapStyle={mapStyle}
         />
-    
+
     <MapCircles bind:zoom={mapZoom} 
         filteredData={filteredData}
         borders={borders}
-        bind:country = {country}
-        boundingBoxes = {boundingBoxes}/> 
+        bounds = {bounds}
+        mapStyle = {mapStyle}/> 
 </div>
 
 
