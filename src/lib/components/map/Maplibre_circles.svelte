@@ -1,6 +1,5 @@
 <script lang="ts">
   import { MapLibre, CircleLayer, LineLayer, GeoJSON, Popup} from 'svelte-maplibre';
-  import MapInstanceCapture from './MapInstanceCapture.svelte';
 
   let {zoom = $bindable(), filteredData, borders, bounds=$bindable(), mapStyle} = $props()
 
@@ -17,7 +16,7 @@
   preserveDrawingBuffer={true}
 >
 
-<!-- <MapInstanceCapture /> -->
+
 
   <GeoJSON
     id="borders-1925"

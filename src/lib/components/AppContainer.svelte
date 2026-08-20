@@ -174,14 +174,14 @@ let filteredData = $derived({ ...europeGeoJson, features: filterFeatures() });
         </div>
     </div>
 
-    <DownloadButton 
+    <DownloadButton
         actors={actors}
         subActors={subActors}
         dates={dates}
         country={country}
         filteredData={filteredData}
+        borders={borders}
         bounds={bounds}
-        mapStyle={mapStyle}
         />
 
     <MapCircles bind:zoom={mapZoom} 
@@ -202,9 +202,8 @@ let filteredData = $derived({ ...europeGeoJson, features: filterFeatures() });
     <div id="timeline">
         <BarChart filteredData={filteredData} bind:dates = {dates} countryTimelineOnly={countryTimelineOnly} country={country}/>
     </div>
-
-
 </div>
+
 
 
     
