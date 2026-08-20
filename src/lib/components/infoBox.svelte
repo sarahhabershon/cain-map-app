@@ -44,7 +44,7 @@
     >
       <div class="modal-content">
         <div class="modal-header">
-          <h2 id="modal-title">About the CAIN Dataset</h2>
+          <h2 id="modal-title">How to use the map</h2>
           <button 
             type="button"
             class="close-btn" 
@@ -57,7 +57,9 @@
         
         <div class="modal-body">
           <div class="content-section">
-            <p>The Citizen Anger Interwar News (CAIN) dataset provides information on political violence in Europe's interwar democracies (1919-1939). Political violence includes any event that saw the use of force that resulted in at least one injury by a government or a non-state actor. Violence could have been one-sided (against civilians) or reciprocal. The data is organized at the level of news reports and several news reports might describe the same event.</p>
+            <p>Each point on the map represents a news report of a political violence event. Multiple reports may describe the same event. Zoom in to see individual reports more clearly, outlined in black. Select single events to see the date and actors involved. Use the timeline slider to select a period of interest. When you select an actor group or country, the timeline shows the share of records associated with that selection. Toggle to single-country view to restrict the timeline to the selected country.</p> <br>
+            <h3>About the CAIN dataset</h3>
+            <p>The Citizen Anger Interwar News (CAIN) dataset records reports of political violence in Europe's interwar democracies (1919-1939). Political violence includes any event that saw the use of force that resulted in at least one injury by a government or a non-state actor. Violence could have been one-sided (against civilians) or reciprocal. The data is organized at the level of news reports and several news reports might describe the same event.</p>
           </div>
 
           <div class="content-section">
