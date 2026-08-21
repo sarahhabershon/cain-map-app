@@ -426,8 +426,19 @@
   class="download-btn"
   onclick={startGeneration}
   disabled={generating}
+  aria-label="Download report"
 >
-  {generating ? '⏳ Generating...' : '⬇ Download Report'}
+  {#if generating}
+    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+    </svg>
+  {:else}
+    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+      <polyline points="7 10 12 15 17 10"/>
+      <line x1="12" y1="15" x2="12" y2="3"/>
+    </svg>
+  {/if}
 </button>
 
 {#if showOffscreenMap}
@@ -442,29 +453,35 @@
 {/if}
 
 <style>
+
   .download-btn {
-    position: absolute;
-    bottom: 1.5rem;
-    right: 1rem;
-    z-index: 100;
-    background: white;
-    color: #383C42;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #555;
+    color: white;
     border: none;
-    padding: 0.6rem 1.1rem;
-    border-radius: 8px;
-    font-family: 'Roboto Condensed', sans-serif;
-    font-size: 0.9rem;
-    font-weight: 600;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.18);
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
   }
 
   .download-btn:hover:not(:disabled) {
-    background: #fec604;
+    background-color: #fec604;
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  }
+
+  .download-btn:active {
+    transform: scale(0.95);
   }
 
   .download-btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
   }
+
 </style>

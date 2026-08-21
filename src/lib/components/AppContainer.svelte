@@ -195,8 +195,17 @@ let filteredData = $derived({ ...europeGeoJson, features: filterFeatures() });
 <div class="timeline-shell">
     <div class="info-button-wrapper">
         <Info bind:countryOpen={countryOpen}
-                bind:filterOpen={filterOpen}
-                bind:showSuggestions={showSuggestions}/>
+            bind:filterOpen={filterOpen}
+            bind:showSuggestions={showSuggestions}/>
+        <DownloadButton
+            actors={actors}
+            subActors={subActors}
+            dates={dates}
+            country={country}
+            filteredData={filteredData}
+            borders={borders}
+            bounds={bounds}
+        />
     </div>
 
     <div id="timeline">
@@ -210,9 +219,7 @@ let filteredData = $derived({ ...europeGeoJson, features: filterFeatures() });
 
 
   <style>
-        /* =========================
-    GLOBAL BASE
-    ========================= */
+
 
     :global(html, body, #svelte) {
     height: 100%;
@@ -220,11 +227,6 @@ let filteredData = $derived({ ...europeGeoJson, features: filterFeatures() });
     padding: 0;
     font-family: 'Roboto Condensed', sans-serif;
     }
-
-
-    /* =========================
-    MAIN CONTAINER & MAP
-    ========================= */
 
     .container {
         position: relative;
@@ -241,9 +243,7 @@ let filteredData = $derived({ ...europeGeoJson, features: filterFeatures() });
         }
 
 
-    /* =========================
-    TOOLBAR + FILTERS LAYER
-    ========================= */
+    /*TOOLBAR + FILTERS LAYER */
 
 
     .toolbar-wrapper {
@@ -316,9 +316,7 @@ let filteredData = $derived({ ...europeGeoJson, features: filterFeatures() });
     }
 
 
-    /* =========================
-    TIMELINE / BAR CHART
-    ========================= */
+    /*TIMELINE / BAR CHART*/
 
     .timeline-shell {
         position: relative;
@@ -359,9 +357,7 @@ let filteredData = $derived({ ...europeGeoJson, features: filterFeatures() });
         box-shadow: 0 -3px 12px rgba(0,0,0,0.2);
         }
 
-    /* =========================
-    INFO
-    ========================= */
+    /*INFO*/
 
     .info-button-wrapper {
     position: relative;
