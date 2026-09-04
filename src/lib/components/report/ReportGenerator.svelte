@@ -25,8 +25,7 @@
   const offscreenH = Math.round(offscreenW / (pdfWidth / pdfHeight));
 
   // --- Bounds adjustment ---
-  // Country sits in the right 2/3 of the page (left panel takes ~30%)
-  // Expand east to push country left, expand south for chart
+
   function adjustBounds(b) {
     const [minLon, minLat, maxLon, maxLat] = b;
     const lonSpan = maxLon - minLon;
@@ -61,7 +60,7 @@
       .slice(0, 6);
   }
 
-  // --- Chart builder (timeline by month) ---
+  // --- Chart builder  ---
   function buildChartSvg(features) {
     if (!features || features.length === 0) return null;
 
@@ -216,16 +215,15 @@
 
     const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
 
-    // Map fills whole page
+
     pdf.addImage(mapImage, 'PNG', 0, 0, pdfWidth, pdfHeight);
 
-    // Full-height panel — shadow then white
+
     pdf.setFillColor(210, 210, 210);
     pdf.roundedRect(panelX + 1, panelY + 1, panelWidth, panelHeight, 3, 3, 'F');
     pdf.setFillColor(255, 255, 255);
     pdf.roundedRect(panelX, panelY, panelWidth, panelHeight, 3, 3, 'F');
 
-    // Chart — bottom right, horizontally compressed to sit beside panel
     if (chartImage) {
       const chartX = panelRight + chartMargin;
       const chartY = pdfHeight - chartHeight - chartMargin;
@@ -242,14 +240,14 @@
     const contentWidth = panelWidth - padding * 2;
     let cursorY = panelY + padding;
 
-    // Header
+
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(10);
     pdf.setTextColor(56, 60, 66);
     pdf.text('Interwar Political Violence Report', panelX + padding, cursorY + 4);
     cursorY += 10;
 
-    // Filter lines
+
     const filterLines: { label: string; value: string }[] = [];
     filterLines.push({ label: 'Total events', value: features.length.toString() });
     if (country) filterLines.push({ label: 'Country', value: country });
@@ -275,12 +273,12 @@
       if (i === 0) cursorY += 1;
     });
 
-    // Divider
+
     pdf.setDrawColor(230, 230, 230);
     pdf.line(panelX + padding, cursorY, panelX + panelWidth - padding, cursorY);
     cursorY += 5;
 
-    // Actor group breakdown
+
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(8);
     pdf.setTextColor(56, 60, 66);
@@ -327,57 +325,6 @@
     }
 
 
-  //   // Find max point count in any cluster location
-  //   // Approximate by finding the max events in any single location (lat/lon pair)
-  //   const locationCounts = new Map<string, number>();
-  //   for (const f of features) {
-  //     const key = `${f.properties.lat_new?.toFixed(3)},${f.properties.lon_new?.toFixed(3)}`;
-  //     locationCounts.set(key, (locationCounts.get(key) ?? 0) + 1);
-  //   }
-  //   const maxClusterCount = Math.max(...locationCounts.values(), 1);
-
-  //   function drawEventScale(pdf, x: number, startY: number, maxCount: number) {
-  //   pdf.setFont('helvetica', 'bold');
-  //   pdf.setFontSize(8);
-  //   pdf.setTextColor(56, 60, 66);
-  //   pdf.text('EVENT SCALE', x, startY);
-  //   let y = startY + 5;
-
-  //   const items = [
-  //     { label: '1 event', count: 1 },
-  //     { label: `${maxCount} events`, count: maxCount },
-  //   ];
-
-  //   items.forEach(({ label, count }) => {
-  //     // Radius interpolated from your cluster paint expression at zoom 5
-  //     // point_count: 1→7px, 500→35px — scale to mm for PDF
-  //     const rPx = 7 + (count / 500) * (35 - 7);
-  //     const rMm = Math.max(1.2, Math.min(rPx * 0.065, 6)); // scale px→mm, clamp
-
-  //     // Colour interpolated from your cluster paint expression
-  //     // 2→#fdae2a, 420→#d87355
-  //     const t = Math.min(count / 420, 1);
-  //     const r = Math.round(253 + (216 - 253) * t);
-  //     const g = Math.round(174 + (115 - 174) * t);
-  //     const bCol = Math.round(42 + (85 - 42) * t);
-
-  //     pdf.setFillColor(r, g, bCol);
-  //     pdf.setDrawColor(0, 0, 0);
-  //     pdf.setLineWidth(0.2);
-  //     pdf.circle(x + 6, y, rMm, 'FD'); // filled + stroke
-
-  //     pdf.setFont('helvetica', 'normal');
-  //     pdf.setFontSize(7.5);
-  //     pdf.setTextColor(50, 50, 50);
-  //     pdf.text(label, x + 6 + rMm + 2, y + 2);
-  //     y += rMm * 2 + 4;
-  //   });
-
-  //   return y;
-  // }
-  //   cursorY = drawEventScale(pdf, panelX + padding, cursorY, maxClusterCount);
-  //   cursorY += 3;
-
     // --- Logos pinned to bottom of panel ---
     const logoSectionY = panelY + panelHeight - padding - 20;
 
@@ -394,8 +341,8 @@
     pdf.setTextColor(50, 50, 50);
     pdf.text('CAIN Dataset', panelX + padding, logoSectionY - padding - 1.5);
 
-    // Logos — both constrained to same fixed height
-    const targetLogoH = 8; // mm — same height for both
+    // Logos —  constrained to same fixed height
+    const targetLogoH = 8; // mm 
     const dangerAspect = dangerLogo.width / dangerLogo.height;
     const ercAspect = ercLogo.width / ercLogo.height;
     const dangerW = targetLogoH * dangerAspect;
