@@ -243,7 +243,7 @@ let filteredData = $derived({ ...europeGeoJson, features: filterFeatures() });
         }
 
 
-    /*TOOLBAR + FILTERS LAYER */
+    /*Toolbar and filters layer */
 
 
     .toolbar-wrapper {
@@ -298,7 +298,7 @@ let filteredData = $derived({ ...europeGeoJson, features: filterFeatures() });
     /* Search bar */
     #toolbar > :global(.search-wrapper) {
         flex: 0 0 100%;
-        margin-top: 0.25rem;   /* close, not spaced far */
+        margin-top: 0.25rem;
     }
 
 
@@ -316,7 +316,7 @@ let filteredData = $derived({ ...europeGeoJson, features: filterFeatures() });
     }
 
 
-    /*TIMELINE / BAR CHART*/
+    /*timeline chart */
 
     .timeline-shell {
         position: relative;
