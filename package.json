@@ -8,7 +8,7 @@
 		"build": "vite build",
 		"preview": "vite preview",
 		"build:static": "STATIC_BUILD=true vite build",
-	    "deploy": "npm run build:static && git add build && git commit -m 'Update static site' || true && git push origin $(git subtree split --prefix build):refs/heads/gh-pages --force",
+		"deploy": "npm run build:static && git add build && git commit -m 'Update static site' || true && git push origin $(git subtree split --prefix build):refs/heads/gh-pages --force",
 		"prepare": "svelte-kit sync || echo ''",
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint ."
@@ -29,6 +29,7 @@
 		"vite": "^6.0.0"
 	},
 	"dependencies": {
+		"@sveltejs/adapter-static": "^3.0.10",
 		"d3": "^7.9.0",
 		"html2canvas": "^1.4.1",
 		"jspdf": "^4.0.0",

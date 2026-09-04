@@ -1,37 +1,22 @@
 <script lang="ts">
   import { MapLibre, CircleLayer, LineLayer, GeoJSON, Popup} from 'svelte-maplibre';
-  import type { LngLatBoundsLike } from 'maplibre-gl';
-  
-  let {zoom = $bindable(), filteredData, borders, country = $bindable(), boundingBoxes} = $props()
+
+  let {zoom = $bindable(), filteredData, borders, bounds=$bindable(), mapStyle} = $props()
 
 
-  // let bounds: LngLatBoundsLike = $state([-10.0, 24.5, 31.5, 61.5]);
 
-  const europeBBox: LngLatBoundsLike = [-10.0, 24.5, 31.5, 61.5];
-
-  // bounds is reactive and will update automatically based on country
- let bounds: LngLatBoundsLike = $derived.by(() => {
-  if (!country) return europeBBox; // default to Europe
-
-  if (!boundingBoxes) return europeBBox; // safeguard
-
-  const b = boundingBoxes.find(b => b.country_coded === country);
-  return b ? [b.min_lon, b.min_lat, b.max_lon, b.max_lat] : europeBBox;
-});
-
-  
 </script>
 
 
 
- <!-- "https://api.maptiler.com/maps/019ba32c-43d2-74ac-bdba-1768cc85c5c2/style.json?key=GDx9s6OzDP05pKKgG4wT" -->
-
-
 <MapLibre  
-  style = "https://api.maptiler.com/maps/019ba32c-43d2-74ac-bdba-1768cc85c5c2/style.json?key=GDx9s6OzDP05pKKgG4wT"
+  style = {mapStyle}
   bind:zoom={zoom}
   bind:bounds={bounds}
+  preserveDrawingBuffer={true}
 >
+
+
 
   <GeoJSON
     id="borders-1925"
