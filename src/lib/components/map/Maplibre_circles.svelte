@@ -128,10 +128,14 @@
               <div class="actor">{data.properties.actor_b}</div>
             </div>
 
-
             {#if data.properties.deaths}
               <div class="deaths">Deaths: {data.properties.deaths}</div>
             {/if}
+
+            <div class="source">
+              <p><strong>Source:</strong> {data.properties.newspaper}</p>
+            </div>
+
 
           </div> 
 

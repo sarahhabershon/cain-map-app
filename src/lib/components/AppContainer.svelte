@@ -138,6 +138,7 @@
 
 let filteredData = $derived({ ...europeGeoJson, features: filterFeatures() });
 
+console.log(filteredData)
 
 
 
