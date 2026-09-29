@@ -55,6 +55,7 @@
           </button>
         </div>
         
+        
         <div class="modal-body">
           <div class="content-section">
             <p>Each point on the map represents a news report of a political violence event. Multiple reports may describe the same event. Zoom in to see individual reports more clearly, outlined in black. Select single events to see the date and actors involved. Use the timeline slider to select a period of interest. When you select an actor group or country, the timeline shows the share of records associated with that selection. Toggle to single-country view to restrict the timeline to the selected country.</p> <br>
